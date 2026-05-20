@@ -15,8 +15,8 @@ build/
 # prisma / tooling
 *.tsbuildinfo
 
-# uploads & local data
-uploads/
+# uploaded files at API root only (do not ignore src/modules/uploads/)
+/uploads/
 
 # OS / IDE
 .DS_Store
