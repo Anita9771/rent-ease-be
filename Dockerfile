@@ -1,24 +1,27 @@
-FROM node:20-alpine AS base
-RUN corepack enable pnpm
+# Standalone API image — build context must be this package root (rent-ease-be repo root).
+FROM node:20-alpine AS builder
 WORKDIR /app
+RUN apk add --no-cache openssl libc6-compat
 
-FROM base AS deps
-COPY package.json pnpm-workspace.yaml ./
-COPY apps/api/package.json apps/api/package.json
-RUN pnpm install --filter api...
+COPY package.json package-lock.json* ./
+RUN npm install
 
-FROM deps AS builder
-COPY apps/api ./apps/api
-WORKDIR /app/apps/api
-RUN pnpm build
+COPY prisma ./prisma
+RUN npx prisma generate
+
+COPY nest-cli.json tsconfig.json ./
+COPY src ./src
+RUN npm run build
 
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-RUN corepack enable pnpm
-COPY --from=builder /app/apps/api/dist ./dist
-COPY --from=deps /app/apps/api/package.json ./package.json
-COPY --from=deps /app/apps/api/node_modules ./node_modules
-EXPOSE 4000
-CMD ["node", "dist/main.js"]
+RUN apk add --no-cache openssl libc6-compat
 
+COPY package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+
+EXPOSE 4000
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
