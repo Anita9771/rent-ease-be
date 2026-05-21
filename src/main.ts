@@ -22,7 +22,7 @@ async function bootstrap() {
   );
 
   const frontendUrl =
-    config.get<string>('FRONTEND_URL') ?? config.get<string>('frontendUrl') ?? 'http://localhost:3000';
+    config.get<string>('FRONTEND_URL') ?? config.get<string>('frontendUrl');
   const nodeEnv = config.get<string>('NODE_ENV') ?? config.get<string>('nodeEnv') ?? 'development';
   const devOrigins = new Set([
     frontendUrl,
@@ -57,7 +57,7 @@ async function bootstrap() {
 
   const port = config.get<number>('PORT') ?? 4000;
   await app.listen(port);
-  Logger.log(`🚀 RentEase API running at http://localhost:${port}/${globalPrefix}`);
+  Logger.log(`🚀 RentEase API running at http://localhost:${port}}/${globalPrefix}`);
 }
 
 bootstrap().catch((error) => {
